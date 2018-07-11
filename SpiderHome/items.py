@@ -40,28 +40,6 @@ class GdswItem(scrapy.Item):
     q = scrapy.Field()  # 流量
 
 
-class GdepbItem(scrapy.Item):
-    thread = scrapy.Field()
-    title = scrapy.Field()
-    time = scrapy.Field()
-    cate = scrapy.Field()
-    body = scrapy.Field()
-    obj = scrapy.Field()
-    location = scrapy.Field()
-    doc_loc = scrapy.Field()
-
-
-class App_gdepbItem(scrapy.Item):
-    EntityId = scrapy.Field()
-    YearWeek = scrapy.Field()
-    SectionName = scrapy.Field()
-    WeekRange = scrapy.Field()
-    WaterSysName = scrapy.Field()
-    RiverPartName = scrapy.Field()
-    LevelID = scrapy.Field()
-    OverItem = scrapy.Field()
-
-
 class FjwItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
@@ -102,21 +80,3 @@ class GzssItem(scrapy.Item):
     Notes = scrapy.Field()  # 备注 Notes
     doc_urls = scrapy.Field()
     doc_path = scrapy.Field()
-
-
-class CSGXItem1(scrapy.Item):
-    Thead = scrapy.Field()
-    Jurisdiction = scrapy.Field()
-    Street = scrapy.Field()
-    Cellname = scrapy.Field()
-    DeclarationBody = scrapy.Field()
-    ReconstructedArea = scrapy.Field()
-    Notes = scrapy.Field()
-
-
-class CSGXItem2(scrapy.Item):
-    Thead = scrapy.Field()
-    Title = scrapy.Field()
-    Date = scrapy.Field()
-    Notes = scrapy.Field()
-    Files = scrapy.Field()

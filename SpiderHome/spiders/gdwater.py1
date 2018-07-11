@@ -12,22 +12,22 @@ from SpiderHome.items import GdwaterItem
 
 
 class GdwaterSpider(Spider):
+    queue = [0]
     name = 'gdwater'
     custom_settings = {
         'ITEM_PIPELINES': {
             'SpiderHome.pipelines.GdwaterPipeline': 300,
         },
     }
-    count = 0
-    day1 = datetime(2017, 10, 25, 0, 0)
-    day2 = datetime(2017, 7, 1, 0, 0)
+    day1 = datetime(2017, 4, 1, 0, 0)
+    day2 = datetime(2011, 9, 9, 0, 0)
     form = {
         '__EVENTVALIDATION': '',
         '__VIEWSTATE': '',
         'btn_query': '查询',
         'ddl_addvcd': '',
-        'hidsearch': '',  # 81000880，81000755
-        'txt_search': '飞来峡',
+        'hidsearch': '',
+        'txt_search': '',
         'txt_time1': (day1 - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M"),
         'txt_time2': day1.strftime("%Y-%m-%d %H:%M")
     }
@@ -43,12 +43,17 @@ class GdwaterSpider(Spider):
         self.form['__VIEWSTATE'] = soup.find(
             'input', id='__VIEWSTATE')['value']
         while self.day1 > self.day2:
-            self.form['txt_time2'] = self.day1.strftime("%Y-%m-%d %H:%M")
-            #print(self.day1.strftime("%Y-%m-%d %H:%M"))
-            self.day1 = self.day1 - timedelta(hours=1)
+            self.form['txt_time2'] = (
+                self.day1 - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M")
             self.form['txt_time1'] = self.day1.strftime("%Y-%m-%d %H:%M")
+            while len(self.queue) == 0:
+                sleep(10)
+            self.queue.pop()
+            sleep(2)
+            print(self.day1.strftime("%Y-%m-%d %H:%M"))
+            self.day1 = self.day1 - timedelta(hours=1)
             yield FormRequest(
-                url=self.url, formdata=self.form, callback=self.second_parse, meta={'txt_time2': self.form['txt_time2']})
+                url=self.url, formdata=self.form, callback=self.second_parse)
 
     def second_parse(self, response):
         print('in')
@@ -56,9 +61,9 @@ class GdwaterSpider(Spider):
         div = soup.find('div', id='LeftTree')
         tbody1 = div.find('tbody')
         trs = tbody1.find_all('tr')
-        self.count += 1
         trs.reverse()
         trs.pop()
+        self.queue.append(1)
         for tr in trs:
             tds = tr.find_all('td')
             item = GdwaterItem()
@@ -67,14 +72,9 @@ class GdwaterSpider(Spider):
             item['county'] = tds[1].get_text().strip()
             item['site'] = tds[2].get_text().strip()
             item['time'] = tds[3].get_text().strip()
-            try:
-                item['water_level'] = float(tds[4].get_text().strip())
-            except:
-                item['water_level'] = None
+            item['water_level'] = tds[4].get_text().strip()
             item['warning_level'] = tds[5].get_text().strip()
             item['water_potemtial'] = tds[6].get_text().strip()
-            print(response.meta['txt_time2'])
-            print(self.count)
             yield item
         div = soup.find('div', id='RightTree')
         trs = div.find_all('tr')
@@ -89,12 +89,6 @@ class GdwaterSpider(Spider):
             item['county'] = tds[1].get_text().strip()
             item['site'] = tds[2].get_text().strip()
             item['time'] = tds[3].get_text().strip()
-            item['water_level'] = float(tds[4].get_text().strip())
-            try:
-                item['flood_limit_water_level'] = float(
-                    tds[5].get_text().strip())
-            except:
-                item['flood_limit_water_level'] = None
-            print(response.meta['txt_time2'])
-            print(self.count)
+            item['water_level'] = tds[4].get_text().strip()
+            item['flood_limit_water_level'] = tds[5].get_text().strip()
             yield item

@@ -6,7 +6,7 @@ import parse_type
 import pymysql
 import requests
 
-from SpiderHome.store import GDSWDB, GZSSDB, GdsqDB, CSGHDB1, CSGHDB2, GDEPBDB, GdszDB
+from SpiderHome.store import GDSWDB, GZSSDB, GdsqDB
 
 
 class GdsqPipeline(object):
@@ -52,9 +52,7 @@ class fjwPipeline(object):
             charset='utf8')
         cursor = conn.cursor()  # get the cursor
         cursor.execute(
-            "INSERT INTO fjw (url,city,title,region,district_name,\
-                house_desc,house_infor,contact,phone_number,update_time) \
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            "INSERT INTO fjw (url,city,title,region,district_name,house_desc,house_infor,contact,phone_number,update_time) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             (item['url'], item['city'], item['title'], item['region'],
              item['district_name'], item['house_desc'], item['house_infor'],
              item['contact'], item['phone_number'], item['update_time']))
@@ -115,28 +113,3 @@ class GzssPipeline(object):
         item['doc_path'] = path
         spec = {"Thread": item['Thread']}
         GZSSDB.Gzss.update(spec, {'$set': dict(item)}, upsert=True)
-
-
-class CSGXPipeline(object):
-    def process_item(self, item, spider):
-        if item.get('Jurisdiction') is not None:
-            spec = {}
-            CSGHDB1[item['Thead']].update(spec, {'$set': item}, upsert=True)
-        else:
-            spec = {}
-            CSGHDB2[item['Thead']].update(spec, {'$set': item}, upsert=True)
-
-
-class GDEPBPipeline(object):
-    def process_item(self, item, spider):
-        thread = item['thread']
-        item.pop('thread')
-        spec = {'title': item['title']}
-        GDEPBDB[thread].update(spec, {'$set': item}, upsert=True)
-        return None
-
-
-class AppGDEPBPipeline(object):
-    def process_item(self, item, spider):
-        spec = item
-        GdszDB.app_week.update(spec, {'$set': dict(item)}, upsert=True)
